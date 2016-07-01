@@ -14,12 +14,6 @@ const DEFAULTS = {
   redirectUri: 'http://localhost/callback'
 };
 
-const DEFAULT_BROWSER_OPTIONS = {
-  location: 'no',
-  clearsessioncache: 'yes',
-  clearcache: 'yes'
-};
-
 export class OAuthProvider implements IOauthProvider {
     options: IOAuthOptions;
     protected APP_SCOPE_DELIMITER: string = ',';
@@ -27,63 +21,36 @@ export class OAuthProvider implements IOauthProvider {
     protected defaults: Object = {};
 
     constructor(options: IOAuthOptions = {}) {
-        this.options = options;
+        this.options = utils.defaults(options, DEFAULTS);
+
+        if (!options.clientId) {
+            throw Error(`A ${this.name} client id must exist`);
+        }
     }
 
     get name() {
         return this.constructor.name || this.authUrl;
     }
 
-    login(config, browserOptions: Object = {}) {
-        const options = config || this.options;
+    parseResponseInUrl(url) {
+      const response = utils.parseQueryString(url);
 
-        if (!options.clientId) {
-            throw Error(`A ${this.name} client id must exist`);
-        }
+      if (!this.isValid(response)) {
+        const error = new Error(`Problem authenticating with ${this.name}`);
 
-        const url = this.optionsToDialogUrl(options);
-        const windowParams = this.serializeBrowserOptions(
-          utils.defaults(browserOptions, DEFAULT_BROWSER_OPTIONS)
-        );
-
-        return new Promise((resolve, reject) => {
-            const browserRef = window.cordova.InAppBrowser.open(url, '_blank', windowParams);
-            const exitListener = () => reject(`The "${this.name}" sign in flow was canceled`);
-
-            browserRef.addEventListener('loadstart', (event) => {
-                if (event.url.indexOf(options.redirectUri) === 0) {
-                    browserRef.removeEventListener('exit', exitListener);
-                    browserRef.close();
-                    const parsedResponse = utils.parseQueryString(event.url);
-
-                    if (this.isValid(parsedResponse)) {
-                        resolve(parsedResponse);
-                    } else {
-                        const error = new Error(`Problem authenticating with ${this.name}`);
-
-                        Object.defineProperty(error, 'response', { value: parsedResponse });
-                        reject(error);
-                    }
-                }
-            })
-            browserRef.addEventListener('exit', exitListener);
-        })
-    }
-
-    protected serializeBrowserOptions(options: Object) {
-      const chunks = [];
-
-      for (const prop in options) {
-        if (options.hasOwnProperty(prop)) {
-          chunks.push(`${prop}=${options[prop]}`);
-        }
+        Object.defineProperty(error, 'response', { value: response });
+        throw error;
       }
 
-      return chunks.join(',');
+      return response;
+    }
+
+    dialogUrl() {
+      return this.optionsToDialogUrl(this.options);
     }
 
     protected optionsToDialogUrl(options: any): string {
-        utils.defaults(options, this.defaults, DEFAULTS)
+        utils.defaults(options, this.defaults)
         let url = `${this.authUrl}?client_id=${options.clientId}&redirect_uri=${options.redirectUri}`;
 
         if (options.appScope) {

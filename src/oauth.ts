@@ -4,37 +4,66 @@
  * http://www.nraboy.com
  */
 
+import { Provider } from './provider';
+
 declare var window: any;
+
+const DEFAULT_BROWSER_OPTIONS = {
+  location: 'no',
+  clearsessioncache: 'yes',
+  clearcache: 'yes'
+};
 
 /*
  * The main driver class for connections to each of the providers.
  */
 export class CordovaOauth {
 
-    _provider: IOauthProvider;
+    logInVia(provider: Provider, browserOptions: Object = {}) {
+        const url = provider.dialogUrl();
+        const windowParams = this.serializeBrowserOptions(
+          utils.defaults(browserOptions, DEFAULT_BROWSER_OPTIONS)
+        );
 
-    constructor(provider: IOauthProvider) {
-        this._provider = provider;
-    }
-
-    login(config, browserOptions) {
         return new Promise((resolve, reject) => {
-            if (window.cordova) {
-                if (window.cordova.InAppBrowser) {
-                    this._provider.login(config, browserOptions).then((success) => {
-                        resolve(success);
-                    }, (error) => {
-                        reject(error);
-                    });
-                } else {
-                    reject("The Apache Cordova InAppBrowser plugin was not found and is required");
-                }
-            } else {
-                reject("Cannot authenticate via a web browser");
+            if (!window.cordova) {
+                return reject(new Error('Cannot authenticate via a web browser'));
             }
-        });
+
+            if (!window.cordova.InAppBrowser) {
+                return reject(new Error('The Apache Cordova InAppBrowser plugin was not found and is required'));
+            }
+
+            const browserRef = window.cordova.InAppBrowser.open(url, '_blank', windowParams);
+            const exitListener = () => reject(`The "${provider.name}" sign in flow was canceled`);
+
+            browserRef.addEventListener('loadstart', (event) => {
+                if (event.url.indexOf(provider.options.redirectUri) === 0) {
+                    browserRef.removeEventListener('exit', exitListener);
+                    browserRef.close();
+
+                    try {
+                      resolve(provider.parseResponseInUrl(event.url));
+                    } catch (e) {
+                      reject(e);
+                    }
+                }
+            })
+            return browserRef.addEventListener('exit', exitListener);
+        })
     }
 
+    protected serializeBrowserOptions(options: Object) {
+      const chunks = [];
+
+      for (const prop in options) {
+        if (options.hasOwnProperty(prop)) {
+          chunks.push(`${prop}=${options[prop]}`);
+        }
+      }
+
+      return chunks.join(',');
+    }
 }
 
 /*
