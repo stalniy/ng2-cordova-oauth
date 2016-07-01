@@ -42,10 +42,12 @@ export class OAuthProvider implements IOauthProvider {
         }
 
         const url = this.optionsToDialogUrl(options);
+        const windowParams = this.serializeBrowserOptions(
+          utils.defaults(browserOptions, DEFAULT_BROWSER_OPTIONS)
+        );
 
         return new Promise((resolve, reject) => {
-            const browserRef = window.cordova.InAppBrowser
-                .open(url, '_blank', this.serializeBrowserOptions(browserOptions));
+            const browserRef = window.cordova.InAppBrowser.open(url, '_blank', windowParams);
             const exitListener = () => reject(`The "${this.name}" sign in flow was canceled`);
 
             browserRef.addEventListener('loadstart', (event) => {

@@ -30,9 +30,9 @@ var OAuthProvider = (function () {
             throw Error("A " + this.name + " client id must exist");
         }
         var url = this.optionsToDialogUrl(options);
+        var windowParams = this.serializeBrowserOptions(utility_1.utils.defaults(browserOptions, DEFAULT_BROWSER_OPTIONS));
         return new Promise(function (resolve, reject) {
-            var browserRef = window.cordova.InAppBrowser
-                .open(url, '_blank', _this.serializeBrowserOptions(browserOptions));
+            var browserRef = window.cordova.InAppBrowser.open(url, '_blank', windowParams);
             var exitListener = function () { return reject("The \"" + _this.name + "\" sign in flow was canceled"); };
             browserRef.addEventListener('loadstart', function (event) {
                 if (event.url.indexOf(options.redirectUri) === 0) {
