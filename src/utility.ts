@@ -11,7 +11,7 @@ export const utils = {
       }, {})
     },
 
-    defaults(target: Object, ...sources: Object[]) {
+    defaults(target: any, ...sources: Object[]) {
       sources.forEach(source => {
         for (const prop in source) {
           if (!target.hasOwnProperty(prop)) {

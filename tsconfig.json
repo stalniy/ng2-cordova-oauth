@@ -8,11 +8,13 @@
         "removeComments": false,
         "noImplicitAny": false,
         "declaration": true,
-        "outDir": "."
+        "outDir": "dist/"
     },
     "files": [
         "src/core.ts",
         "src/oauth.ts",
+        "src/platform/cordova.ts",
+        "src/platform/browser.ts",
         "src/utility.ts",
         "src/provider/facebook.ts",
         "src/provider/google.ts",

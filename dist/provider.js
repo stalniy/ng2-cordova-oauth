@@ -1,3 +1,4 @@
+"use strict";
 var utility_1 = require('./utility');
 var DEFAULTS = {
     redirectUri: 'http://localhost/callback'
@@ -53,5 +54,5 @@ var OAuthProvider = (function () {
         return !response.error && (response.code || response['access_token']);
     };
     return OAuthProvider;
-})();
+}());
 exports.OAuthProvider = OAuthProvider;

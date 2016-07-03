@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -22,5 +23,5 @@ var Google = (function (_super) {
         return _super.prototype.optionsToDialogUrl.call(this, options) + '&approval_prompt=force';
     };
     return Google;
-})(provider_1.OAuthProvider);
+}(provider_1.OAuthProvider));
 exports.Google = Google;

@@ -1,3 +1,4 @@
+"use strict";
 exports.utils = {
     parseQueryString: function (url) {
         var values = url.split(/[?#]{1,2}/)[1].split('&');
