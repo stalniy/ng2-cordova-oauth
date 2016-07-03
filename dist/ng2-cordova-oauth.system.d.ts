@@ -129,8 +129,6 @@ declare module "provider/linkedin" {
     }
 }
 declare module "core" {
-    import { OauthBrowser } from "platform/browser";
-    import { OauthCordova } from "platform/cordova";
     export * from "provider/facebook";
     export * from "provider/google";
     export * from "provider/imgur";
@@ -138,7 +136,7 @@ declare module "core" {
     export * from "provider/meetup";
     export * from "provider/linkedin";
     export const oAuth: {
-        for(type: any): OauthBrowser | OauthCordova;
+        for(type: any): any;
         detect(): any;
     };
 }

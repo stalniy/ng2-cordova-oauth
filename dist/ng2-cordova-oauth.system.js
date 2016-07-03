@@ -467,7 +467,7 @@ System.register("core", ["platform/browser", "platform/cordova", "provider/faceb
     "use strict";
     var __moduleName = context_12 && context_12.id;
     var browser_1, cordova_1;
-    var oAuth;
+    var PLATFORMS, oAuth;
     var exportedNames_1 = {
         'oAuth': true
     };
@@ -505,9 +505,21 @@ System.register("core", ["platform/browser", "platform/cordova", "provider/faceb
                 exportStar_1(linkedin_1_1);
             }],
         execute: function() {
+            PLATFORMS = {
+                instances: {},
+                web: browser_1.OauthBrowser,
+                cordova: cordova_1.OauthCordova
+            };
             exports_12("oAuth", oAuth = {
                 for: function (type) {
-                    return type === 'web' ? new browser_1.OauthBrowser() : new cordova_1.OauthCordova();
+                    if (typeof PLATFORMS[type] !== 'function') {
+                        throw new Error("Unknown oAuth platform type: " + type);
+                    }
+                    if (!PLATFORMS.instances[type]) {
+                        PLATFORMS.instances[type] = new PLATFORMS[type]();
+                    }
+
+                    return PLATFORMS.instances[type];
                 },
                 detect: function () {
                     return window.location.href.indexOf('file:') === 0 ? this.for('cordova') : this.for('web');
