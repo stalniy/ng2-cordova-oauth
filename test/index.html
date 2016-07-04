@@ -17,53 +17,61 @@
     <label><input type="radio" value="imgur" name="network"> Imgur</label>
     <label><input type="radio" value="meetup" name="network"> Meetup</label>
 
-    <button type="button" onclick="openWindow(document.forms.social.network.value)">open window</button>
+    <button type="button" id="login">login</button>
   </form>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.19.31/system.js"></script>
   <script src="../dist/ng2-cordova-oauth.system.js"></script>
   <script type="text/javascript">
-    System.import('core').then((module) => {
-      const oAuth = module.oAuth.detect()
-      let networks = {};
+    System.import('core').then(function(module) {
+      var oAuth = module.oAuth.detect()
+      var networks = {};
+      var redirectUri = 'http://test-oauth.net:8080';
       networks.facebook = new module.Facebook({
         clientId: '573676459473149',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         appScope: ['email'],
         responseType: 'code'
       })
       networks.google = new module.Google({
         clientId: '1068534665812-14l671uddtvt8gr3ugpi5mvg384pogrh.apps.googleusercontent.com',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         appScope: ['email'],
         responseType: 'code'
       })
       networks.linkedin = new module.LinkedIn({
         clientId: '78xt3a3jjx2lh8',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         responseType: 'code'
       })
       networks.instagram = new module.Instagram({
         clientId: 'a60421270c714b55bfc96ccf58d83d1c',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         responseType: 'code'
       })
       networks.imgur = new module.Imgur({
         clientId: '79457a971addd8f',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         responseType: 'code'
       })
       networks.meetup = new module.Meetup({
         clientId: '56uq0g6t45nd636r066rkuk8gh',
-        redirectUri: 'http://localhost:8080',
+        redirectUri: redirectUri,
         responseType: 'code'
       })
 
-      window.openWindow = function(type) {
-        oAuth.logInVia(networks[type])
-          .then(response => console.log(response))
-          .catch(error => console.error(error.response))
-      }
+      document.getElementById('login').addEventListener('click', function() {
+        var providerName = Array.prototype.slice.call(document.forms.social.network)
+          .filter(function(radio) {
+            return radio.checked
+          })[0].value
+
+        oAuth.logInVia(networks[providerName]).then(function(response) {
+          return console.log(response)
+        }).catch(function(error) {
+          console.error(error, error.response)
+        })
+      })
     })
   </script>
 </body>
